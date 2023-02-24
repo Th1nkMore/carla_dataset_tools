@@ -12,7 +12,7 @@ from utils.geometry_types import *
 from utils.transform import transform_to_carla_transform
 
 from recorder.actor import Actor, PseudoActor
-from recorder.camera import RgbCamera, DepthCamera, SemanticSegmentationCamera
+from recorder.camera import RgbCamera, DepthCamera, SemanticSegmentationCamera, InstanceCamera
 from recorder.lidar import Lidar, SemanticLidar
 from recorder.radar import Radar
 from recorder.vehicle import Vehicle, OtherVehicle
@@ -269,6 +269,12 @@ class ActorFactory(object):
                                                       base_save_dir=parent_actor.get_save_dir(),
                                                       carla_actor=carla_actor,
                                                       parent=parent_actor)
+        elif sensor_type == 'sensor.camera.instance_segmentation':
+            sensor_actor = InstanceCamera(uid=self.generate_uid(),
+                                                      name=sensor_name,
+                                                      base_save_dir=parent_actor.get_save_dir(),
+                                                      carla_actor=carla_actor,
+                                                      parent=parent_actor)                                              
         elif sensor_type == 'sensor.lidar.ray_cast':
             sensor_actor = Lidar(uid=self.generate_uid(),
                                  name=sensor_name,

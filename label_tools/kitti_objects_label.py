@@ -30,6 +30,9 @@ def gather_rawdata_to_dataframe(record_name: str, vehicle_name: str, lidar_path:
     camera_rawdata_path_df = load_camera_data(f"{RAW_DATA_PATH}/{record_name}/{vehicle_name}/{camera_path}")
     rawdata_frames_df = pd.merge(rawdata_frames_df, camera_rawdata_path_df, how='outer', on='frame')
 
+    semantic_image_path_df = load_seg_camera_data(f"{RAW_DATA_PATH}/{record_name}/{vehicle_name}/image_2_semantic")
+    rawdata_frames_df = pd.merge(rawdata_frames_df, semantic_image_path_df, how='outer', on='frame')
+
     return rawdata_frames_df
 
 
@@ -62,7 +65,7 @@ class KittiObjectLabelTool:
         if not debug:
             start = time.time()
             thread_pool = ThreadPool()
-            thread_pool.starmap(self.process_frame, self.rawdata_df.iterrows())
+            thread_pool.starmap_async(self.process_frame, self.rawdata_df.iterrows())
             thread_pool.close()
             thread_pool.join()
 
@@ -91,6 +94,7 @@ class KittiObjectLabelTool:
         cam_mat = np.asarray(frame['camera_matrix'])
 
         image = read_image(frame['camera_rawdata_path'])
+        image_seg = read_image(frame['semantic_image_path'])
 
         pointcloud_raw = read_pointcloud(frame['lidar_rawdata_path'])
         o3d_pcd = o3d.geometry.PointCloud()
@@ -145,7 +149,12 @@ class KittiObjectLabelTool:
             bbox_2d = [x_min, y_min, x_max, y_max]
             # For Debug
             # Draw 2d bbox
-            # cv2.rectangle(image, (x_min, y_min), (x_max, y_max), color=(0, 0, 255), thickness=1)
+            if label_type == 'Car':
+                if x_min<0 or x_max>image.shape[0] or y_min<0 or y_max>image.shape[1]:
+                    continue
+                cropped_image = image_seg[x_min:x_max, y_min:y_max]
+                if len(np.where(cropped_image==[0,0,142,255])[0])/((x_max-x_min)*(y_max-y_min)) > 0.4:
+                    cv2.rectangle(image, (x_min, y_min), (x_max, y_max), color=(0, 0, 255), thickness=1)
 
             truncated = cal_truncated(image.shape[0], image.shape[1], bbox_2d)
 

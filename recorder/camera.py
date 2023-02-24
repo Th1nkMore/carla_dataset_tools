@@ -104,3 +104,9 @@ class DepthCamera(CameraBase):
                  color_converter: carla.ColorConverter = None):
         color_converter = carla.ColorConverter.Raw
         super().__init__(uid, name, base_save_dir, parent, carla_actor, color_converter)
+
+class InstanceCamera(CameraBase):
+    def __init__(self, uid, name: str, base_save_dir: str, parent, carla_actor: carla.Sensor,
+                 color_converter: carla.ColorConverter = None):
+        # color_converter = carla.ColorConverter.CityScapesPalette
+        super().__init__(uid, name, base_save_dir, parent, carla_actor, color_converter)

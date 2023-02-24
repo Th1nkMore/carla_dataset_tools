@@ -149,8 +149,6 @@ def write_calib(output_dir, frame_id, lidar_trans: Transform, cam_trans: Transfo
     os.makedirs(calib_dir, exist_ok=True)
     file_path = "{}/{}.txt".format(calib_dir, frame_id)
 
-    camera_mat = np.concatenate((camera_mat, np.array([[0.0], [0.0], [0.0]])), axis=1)
-    camera_mat = camera_mat.reshape(1, 12)
     camera_mat_str = ""
     for x in camera_mat[0]:
         camera_mat_str += str(x)
@@ -200,3 +198,5 @@ def generate_kitti_labels(label_type: str,
                                                                          bbox_3d.center[2],
                                                                          rotation_y)
     return label_str
+
+# def check_car()
