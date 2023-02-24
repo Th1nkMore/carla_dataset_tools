@@ -20,7 +20,6 @@ class OtherVehicle(Actor):
         self.save_dir = '{}/{}_{}'.format(base_save_dir, self.vehicle_type, self.get_uid())
         self.first_tick = True
         # For vehicle control
-        # self.auto_pilot = False
         self.auto_pilot = True
         self.vehicle_agent = None
 
