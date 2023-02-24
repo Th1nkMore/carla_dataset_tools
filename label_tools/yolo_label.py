@@ -97,6 +97,7 @@ class YoloLabelTool:
                 # DEBUG START
                 # Draw label info to image
                 # cv2.putText(preview_img, COCO_NAMES[coco_id], (x, y - 10),
+                # cv2.putText(preview_img, TRACFFIC_LIGHTS[coco_id], (x, y - 10),
                 #             cv2.FONT_HERSHEY_SIMPLEX, 0.5, (36, 255, 12), 1)
                 # cv2.rectangle(image_rgb, (x, y), (x + w, y + h), (0, 255, 0), 1)
                 # DEBUG END
