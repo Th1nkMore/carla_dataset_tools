@@ -20,9 +20,9 @@ class YoloConfig:
 LABEL_DATAFRAME = pd.DataFrame(columns=['raw_value', 'color', 'coco_names_index'],
                                data=[
                                      # [ 4, (220, 20, 60), 0],
-                                     [18, (250, 170, 30), 0],
+                                     [18, (250, 170, 30), 9],
                                     #  [12, (220, 220,  0), 80],
-                                    # [5, (0, 0, 142), 0],
+                                    [5, (0, 0, 142), 2],
                                     # [5, (220, 20, 60), 1],
                                     # [5, (220, 220, 0), 2],
                                     # [5, (250, 170, 30), 3],
@@ -71,7 +71,9 @@ def bound_car(img):
     hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
     hsv_img = decrease_brightness(hsv, 80)
     
-
+"""
+   check the color of triffic light
+"""
 def check_color(img):
     hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
     hsv_img = decrease_brightness(hsv, 80)

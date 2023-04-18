@@ -18,6 +18,7 @@ from recorder.radar import Radar
 from recorder.vehicle import Vehicle, OtherVehicle
 from recorder.infrastructure import Infrastructure
 from recorder.world import WorldActor
+from recorder.weather import WeatherActor
 
 
 class NodeType(Enum):
@@ -27,6 +28,7 @@ class NodeType(Enum):
     INFRASTRUCTURE = 3
     SENSOR = 4
     OTHER_VEHICLE = 5
+    WEATHER = 6
 
 
 class Node(object):
@@ -62,7 +64,8 @@ class Node(object):
     def tick_data_saving(self, frame_id, timestamp):
         if self.get_node_type() == NodeType.SENSOR \
                 or NodeType.VEHICLE \
-                or NodeType.WORLD:
+                or NodeType.WORLD \
+                or NodeType.WEATHER:
             self._actor.save_to_disk(frame_id, timestamp, True)
 
 
@@ -108,6 +111,8 @@ class ActorFactory(object):
             json_actors = json.loads(handle.read())
 
         root = self.create_world_node()
+        weather_node = self.create_weather_node()
+        root.add_child(weather_node)
         for actor_info in json_actors["actors"]:
             actor_type = str(actor_info["type"])
             node = Node()
@@ -161,6 +166,7 @@ class ActorFactory(object):
         vehicle_object = Vehicle(uid=self.generate_uid(),
                                  name=vehicle_name,
                                  base_save_dir=self.base_save_dir,
+                                 carla_world=self.world,
                                  carla_actor=carla_actor)
         vehicle_node = Node(vehicle_object, NodeType.VEHICLE)
         return vehicle_node
@@ -298,6 +304,14 @@ class ActorFactory(object):
             raise AttributeError
         sensor_node = Node(sensor_actor, NodeType.SENSOR)
         return sensor_node
+
+    def create_weather_node(self):
+        weather_actor = WeatherActor(uid=self.generate_uid(),
+                                base_save_dir=self.base_save_dir,
+                                world=self.world,
+                                weather=self.world.get_weather())
+        weather_node = Node(weather_actor, NodeType.WEATHER)
+        return weather_node
 
     def generate_uid(self):
         uid = self._uid_count
