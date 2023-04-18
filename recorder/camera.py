@@ -83,7 +83,7 @@ class CameraBase(Sensor):
                                     f.write(f"0 {center_x} {center_y} {bbox_x} {bbox_y}\n")
             
         except Exception as e:
-            print(e)
+            print("test:"+e)
 
         # Convert to target color template
         if self.color_converter is not None:
