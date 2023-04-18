@@ -92,7 +92,10 @@ class WeatherActor(PseudoActor):
         try:
           self.tick(speed_factor * elapsed_time)
           self.world.set_weather(self.weather)
-          print('\rWeather:' + str(self) + 12 * ' ')
+          # print('\rWeather:' + str(self) + 12 * ' ')
+          with open("{}/{:0>10d}.txt".format(self.save_dir,
+                                                        frame_id),'w') as f:
+                                    f.write('\rWeather:' + str(self) + 12 * ' ')
         except Exception as e:
           print("Weather:"+e)
         if debug:
