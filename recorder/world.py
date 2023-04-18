@@ -65,6 +65,8 @@ class WorldActor(PseudoActor):
             label_type = 'vehicle'
         elif object_type == carla.CityObjectLabel.Pedestrians:
             label_type = 'pedestrian'
+        elif object_type == carla.CityObjectLabel.TrafficLight:
+            label_type == 'traffic light'
         else:
             label_type = 'any'
         env_objects = self.carla_world.get_environment_objects(object_type=object_type)

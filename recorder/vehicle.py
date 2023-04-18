@@ -15,7 +15,7 @@ class OtherVehicle(Actor):
                  name: str,
                  base_save_dir: str,
                  carla_actor: carla.Vehicle):
-        super().__init__(uid=uid, name=name, parent=None, carla_actor=carla_actor)
+        super().__init__(uid=uid, name=name, parent=None,carla_actor=carla_actor)
         self.vehicle_type = copy.deepcopy(carla_actor.type_id)
         self.save_dir = '{}/{}_{}'.format(base_save_dir, self.vehicle_type, self.get_uid())
         self.first_tick = True
@@ -48,13 +48,14 @@ class Vehicle(Actor):
                  uid,
                  name: str,
                  base_save_dir: str,
+                 carla_world: carla.World,
                  carla_actor: carla.Vehicle):
         super().__init__(uid=uid, name=name, parent=None, carla_actor=carla_actor)
+        self.carla_world = carla_world
         self.vehicle_type = copy.deepcopy(carla_actor.type_id)
         self.save_dir = '{}/{}'.format(base_save_dir, self.name)
         self.first_tick = True
         # For vehicle control
-        # self.use_auto_pilot = False
         self.use_auto_pilot = True
         # self.vehicle_agent = BasicAgent(self.carla_actor)
         # self.vehicle_agent = BehaviorAgent(self.carla_actor)
@@ -97,6 +98,8 @@ class Vehicle(Actor):
 
         if self.first_tick:
             self.save_vehicle_info()
+            with open('{}/weather.txt'.format(self.save_dir), 'w', encoding='utf-8') as weather:
+                weather.write(str(self.carla_world.get_weather()))
             with open('{}/vehicle_status.csv'.format(self.save_dir), 'w', encoding='utf-8') as csv_file:
                 writer = csv.DictWriter(csv_file, fieldnames=fieldnames)
                 if self.first_tick:

@@ -161,6 +161,7 @@ class ActorFactory(object):
         vehicle_object = Vehicle(uid=self.generate_uid(),
                                  name=vehicle_name,
                                  base_save_dir=self.base_save_dir,
+                                 carla_world=self.world,
                                  carla_actor=carla_actor)
         vehicle_node = Node(vehicle_object, NodeType.VEHICLE)
         return vehicle_node
