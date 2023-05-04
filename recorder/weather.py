@@ -86,16 +86,16 @@ class WeatherActor(PseudoActor):
         
     def save_to_disk(self, frame_id, timestamp, debug=True):
         os.makedirs(self.save_dir, exist_ok=True)
-        speed_factor = 1 # default 1
+        speed_factor = 10 # default 1
         # update_freq = 0.1 / speed_factor
-        elapsed_time = 2.0
+        elapsed_time = 0.2
         try:
           self.tick(speed_factor * elapsed_time)
           self.world.set_weather(self.weather)
           # print('\rWeather:' + str(self) + 12 * ' ')
           with open("{}/{:0>10d}.txt".format(self.save_dir,
                                                         frame_id),'w') as f:
-                                    f.write('\rWeather:' + str(self) + 12 * ' ')
+                                    f.write('Weather:' + str(self) + 12 * ' ' +'\n')
         except Exception as e:
           print("Weather:"+e)
         if debug:

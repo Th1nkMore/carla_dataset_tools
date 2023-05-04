@@ -3,6 +3,7 @@ import copy
 import csv
 import os
 import carla
+import math
 
 from recorder.actor import Actor
 from recorder.agents.navigation.behavior_agent import BasicAgent
@@ -84,6 +85,13 @@ class Vehicle(Actor):
                 'reverse': vehicle_control.reverse,
                 'gear': vehicle_control.gear}
 
+    def complexity(self, npc, dist):
+        t = npc.get_velocity()
+        velocity = 3.6 * math.sqrt(t.x * t.x
+                               + t.y * t.y
+                               + t.z * t.z)
+        return velocity + min(50, 1/dist**2)
+
     def save_to_disk(self, frame_id, timestamp, debug=False):
         os.makedirs(self.save_dir, exist_ok=True)
         fieldnames = ['frame',
@@ -94,12 +102,10 @@ class Vehicle(Actor):
                       'vx', 'vy', 'vz',
                       'ax', 'ay', 'az',
                       'throttle', 'brake',
-                      'steer', 'reverse', 'gear']
+                      'steer', 'reverse', 'gear','count']
 
         if self.first_tick:
             self.save_vehicle_info()
-            with open('{}/weather.txt'.format(self.save_dir), 'w', encoding='utf-8') as weather:
-                weather.write(str(self.carla_world.get_weather()))
             with open('{}/vehicle_status.csv'.format(self.save_dir), 'w', encoding='utf-8') as csv_file:
                 writer = csv.DictWriter(csv_file, fieldnames=fieldnames)
                 if self.first_tick:
@@ -108,11 +114,22 @@ class Vehicle(Actor):
 
         # Save vehicle status to csv file
         # frame_id x, y, z, roll, pitch, yaw, speed, acceleration
+        count=0
+        try:
+            for npc in self.carla_world.get_actors().filter('*vehicle*'):
+                if npc.id != self.carla_actor.id:
+                    dist = npc.get_transform().location.distance(self.carla_actor.get_transform().location)
+                    # Filter for the vehicles within 50m
+                    if dist < 50:
+                        count +=  self.complexity(npc, dist)
+        except Exception as e:
+            print(f"Caught an exception: {e}\n")
         with open('{}/vehicle_status.csv'.format(self.save_dir), 'a', encoding='utf-8') as csv_file:
             writer = csv.DictWriter(csv_file, fieldnames=fieldnames)
             csv_line = {'frame': frame_id,
                         'timestamp': timestamp,
-                        'speed': self.get_speed()}
+                        'speed': self.get_speed(),
+                        'count': count}
             csv_line.update(self.get_acceleration().to_dict(prefix='a'))
             csv_line.update(self.get_velocity().to_dict(prefix='v'))
             csv_line.update(self.get_transform().to_dict())

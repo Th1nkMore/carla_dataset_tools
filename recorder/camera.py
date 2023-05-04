@@ -24,6 +24,9 @@ class CameraBase(Sensor):
         self.color_converter = color_converter
 
     def save_to_disk_impl(self, save_dir, sensor_data) -> bool:
+        # Convert to target color template
+        if self.color_converter is not None:
+            sensor_data.convert(self.color_converter)
         img = np.reshape(np.copy(sensor_data.raw_data), (sensor_data.height, sensor_data.width, 4))
         # Get the camera matrix 
         try:
@@ -35,6 +38,7 @@ class CameraBase(Sensor):
             fx = image_w / (
                 2.0 * math.tan(float(self.carla_actor.attributes['fov']) * math.pi / 360.0))
             K = self.build_projection_matrix(image_w, image_h, fx)
+            count = 0
             for npc in world.get_actors().filter('*vehicle*'):
                 if npc.id != vehicle.uid:
                     bb = npc.bounding_box
@@ -47,7 +51,6 @@ class CameraBase(Sensor):
                     # to limit to drawing bounding boxes IN FRONT OF THE CAMERA
                         forward_vec = vehicle.get_carla_transform().get_forward_vector()
                         ray = npc.get_transform().location - vehicle.get_carla_transform().location
-
                         if forward_vec.dot(ray) > 1:
                             verts = [v for v in bb.get_world_vertices(npc.get_transform())]
                             x_max = -10000
@@ -73,7 +76,8 @@ class CameraBase(Sensor):
                             center_y = ((int(y_max) + int(y_min))/2)/int(sensor_data.height)
                             bbox_x = (int(x_max) - int(x_min))/int(sensor_data.width)
                             bbox_y = (int(y_max) - int(y_min))/int(sensor_data.height)
-                            if(center_x>0 and center_y>0 and bbox_x>0 and bbox_y>0):
+                            if(1>center_x>0 and 1>center_y>0 and 1>bbox_x>0 and 1>bbox_y>0):
+                                count += self.complexity(npc, dist)
                                 cv.line(img, (int(x_min),int(y_min)), (int(x_max),int(y_min)), (0,0,255, 255), 1)
                                 cv.line(img, (int(x_min),int(y_max)), (int(x_max),int(y_max)), (0,0,255, 255), 1)
                                 cv.line(img, (int(x_min),int(y_min)), (int(x_min),int(y_max)), (0,0,255, 255), 1)
@@ -81,13 +85,11 @@ class CameraBase(Sensor):
                                 with open("{}/{:0>10d}.txt".format(save_dir,
                                                         sensor_data.frame),'a+') as f:
                                     f.write(f"0 {center_x} {center_y} {bbox_x} {bbox_y}\n")
-            
+            # cv.putText(img, f"complexity: {count} ", (10, 50), cv.FONT_HERSHEY_TRIPLEX, 1, (0,0,255, 255), 2)
+            # cv.putText(img, str(world.get_weather()), (10, 100), cv.FONT_HERSHEY_TRIPLEX, 1, (0,0,255, 255), 2)
+
         except Exception as e:
             print("test:"+e)
-
-        # Convert to target color template
-        if self.color_converter is not None:
-            sensor_data.convert(self.color_converter)
 
         # Convert raw data to numpy array, image type is 'bgra8'
         # carla_image_data_array = np.ndarray(shape=(sensor_data.height,
@@ -169,6 +171,12 @@ class CameraBase(Sensor):
 
         return point_img[0:2]
 
+    def complexity(self, npc, dist):
+        t = npc.get_velocity()
+        velocity = 3.6 * math.sqrt(t.x * t.x                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        
+                               + t.y * t.y
+                               + t.z * t.z)
+        return velocity + (0 if dist == 0 else min(50, 1/dist**2))
 class RgbCamera(CameraBase):
     def __init__(self, uid, name: str, base_save_dir: str, parent, carla_actor: carla.Sensor,
                  color_converter: carla.ColorConverter = None):
