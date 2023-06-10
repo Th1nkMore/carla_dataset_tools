@@ -28,8 +28,12 @@ class CameraBase(Sensor):
         if self.color_converter is not None:
             sensor_data.convert(self.color_converter)
         img = np.reshape(np.copy(sensor_data.raw_data), (sensor_data.height, sensor_data.width, 4))
+        with open("{}/{:0>10d}.txt".format(save_dir,
+                                                        sensor_data.frame),'a+') as f:
+            pass
         # Get the camera matrix 
         try:
+            count = 0
             world_2_camera = np.array(self.carla_actor.get_transform().get_inverse_matrix())
             vehicle = self.parent
             world = vehicle.carla_world
@@ -78,10 +82,11 @@ class CameraBase(Sensor):
                             bbox_y = (int(y_max) - int(y_min))/int(sensor_data.height)
                             if(1>center_x>0 and 1>center_y>0 and 1>bbox_x>0 and 1>bbox_y>0):
                                 count += self.complexity(npc, dist)
-                                cv.line(img, (int(x_min),int(y_min)), (int(x_max),int(y_min)), (0,0,255, 255), 1)
-                                cv.line(img, (int(x_min),int(y_max)), (int(x_max),int(y_max)), (0,0,255, 255), 1)
-                                cv.line(img, (int(x_min),int(y_min)), (int(x_min),int(y_max)), (0,0,255, 255), 1)
-                                cv.line(img, (int(x_max),int(y_min)), (int(x_max),int(y_max)), (0,0,255, 255), 1)
+                                # cv.line(img, (int(x_min),int(y_min)), (int(x_max),int(y_min)), (0,0,255, 255), 1)
+                                # cv.line(img, (int(x_min),int(y_max)), (int(x_max),int(y_max)), (0,0,255, 255), 1)
+                                # cv.line(img, (int(x_min),int(y_min)), (int(x_min),int(y_max)), (0,0,255, 255), 1)
+                                # cv.line(img, (int(x_max),int(y_min)), (int(x_max),int(y_max)), (0,0,255, 255), 1)
+                                count+=1
                                 with open("{}/{:0>10d}.txt".format(save_dir,
                                                         sensor_data.frame),'a+') as f:
                                     f.write(f"0 {center_x} {center_y} {bbox_x} {bbox_y}\n")
@@ -99,11 +104,12 @@ class CameraBase(Sensor):
         #                                     buffer=sensor_data.raw_data)
 
         # Save image to [RAW_DATA_PATH]/.../[ID]_[SENSOR_TYPE]/[FRAME_ID].png
-        success = cv.imwrite("{}/{:0>10d}.png".format(save_dir,
-                                                      sensor_data.frame),
-                             img)
+        if count >=1:
+            success = cv.imwrite("{}/{:0>10d}.png".format(save_dir,
+                                                        sensor_data.frame),
+                                img)
 
-        if success and self.is_first_frame():
+        if self.is_first_frame():
             self.save_camera_info(save_dir)
 
         return success
@@ -177,6 +183,7 @@ class CameraBase(Sensor):
                                + t.y * t.y
                                + t.z * t.z)
         return velocity + (0 if dist == 0 else min(50, 1/dist**2))
+
 class RgbCamera(CameraBase):
     def __init__(self, uid, name: str, base_save_dir: str, parent, carla_actor: carla.Sensor,
                  color_converter: carla.ColorConverter = None):
