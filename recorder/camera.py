@@ -198,7 +198,7 @@ class SemanticSegmentationCamera(CameraBase):
 class DepthCamera(CameraBase):
     def __init__(self, uid, name: str, base_save_dir: str, parent, carla_actor: carla.Sensor,
                  color_converter: carla.ColorConverter = None):
-        color_converter = carla.ColorConverter.Raw
+        color_converter = carla.ColorConverter.Depth
         super().__init__(uid, name, base_save_dir, parent, carla_actor, color_converter)
 
 class InstanceCamera(CameraBase):
