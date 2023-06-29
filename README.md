@@ -76,7 +76,7 @@ Thank you for your interest in contributing to this project! Contributions are h
 - [CARLA_INVS](https://github.com/zijianzhang/CARLA_INVS)
 
 ## Citation
-
+```
 @article{Lai2023ActiveDA,
   title={Active Data Acquisition in Autonomous Driving Simulation},
   author={Jianyu Lai and Zexuan Jia and Boao Li},
@@ -84,7 +84,7 @@ Thank you for your interest in contributing to this project! Contributions are h
   year={2023},
   volume={abs/2306.13923}
 }
-
+```
 ## Future Work
 
 To validate the correctness of the strategy, we'd better try multiple algorithms:
