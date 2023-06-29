@@ -5,7 +5,6 @@ import sys
 from pathlib import Path
 from multiprocessing import Pool as ProcessPool
 from sewar.full_ref import mse, rmse, psnr, uqi, ssim, ergas, scc, rase, sam, msssim, vifp
-
 import pandas as pd
 
 sys.path.append(Path(__file__).resolve().parent.parent.as_posix())  # repo path

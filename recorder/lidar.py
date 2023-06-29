@@ -2,7 +2,7 @@
 
 import carla
 import numpy as np
-
+import label_tools.kitti_lidar.lidar_label_view as label_tool
 from recorder.sensor import Sensor
 
 
@@ -47,7 +47,11 @@ class SemanticLidar(Sensor):
         lidar_data['y'] *= -1
 
         # Save point cloud to [RAW_DATA_PATH]/.../[ID]_[SENSOR_TYPE]/[FRAME_ID].npy
-        np.save("{}/{:0>10d}".format(save_dir,
-                                     sensor_data.frame),
-                lidar_data)
+        np.save("{}/{:0>10d}".format(save_dir,sensor_data.frame),lidar_data)
+        
+        with open("{}/{:0>10d}.txt".format(save_dir,sensor_data.frame),'a+') as f:
+            for line in label_tool.save_label(lidar_data):
+                print(line,file=f)
+
         return True
+    

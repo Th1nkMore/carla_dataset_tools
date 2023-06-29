@@ -12,13 +12,15 @@ from param import RAW_DATA_PATH, DATASET_PATH
 from label_tools.yolov5.yolov5_helper import *
 
 
-def gather_yolo_data(record_name: str, vehicle_name: str, rgb_camera_name: str, semantic_camera_name: str):
+def gather_yolo_data(record_name: str, vehicle_name: str, rgb_camera_name: str, semantic_camera_name: str, instance_camera_name: str):
     yolo_rawdata_df = pd.DataFrame()
     vehicle_rawdata_path = f"{RAW_DATA_PATH}/{record_name}/{vehicle_name}"
     rgb_image_path_list = sorted(glob.glob(f"{vehicle_rawdata_path}/{rgb_camera_name}/*.png"))
     semantic_image_path_list = sorted(glob.glob(f"{vehicle_rawdata_path}/{semantic_camera_name}/*.png"))
+    instance_image_path_list = sorted(glob.glob(f"{vehicle_rawdata_path}/{instance_camera_name}/*.png"))
     yolo_rawdata_df['rgb_image_path'] = rgb_image_path_list
     yolo_rawdata_df['semantic_image_path'] = semantic_image_path_list
+    yolo_rawdata_df['instance_image_path'] = instance_image_path_list
     yolo_rawdata_df['record_name'] = record_name
     yolo_rawdata_df['vehicle_name'] = vehicle_name
     return yolo_rawdata_df
@@ -46,6 +48,7 @@ class YoloLabelTool:
     def process_frame(self, index, frame):
         rgb_img_path = frame['rgb_image_path']
         seg_img_path = frame['semantic_image_path']
+        ins_img_path = frame['instance_image_path']
         success = check_id(rgb_img_path, seg_img_path)
         if not success:
             return
@@ -55,12 +58,15 @@ class YoloLabelTool:
 
         image_rgb = None
         image_seg = None
+        image_ins = None
         image_rgb = cv2.imread(rgb_img_path, cv2.IMREAD_COLOR)
         image_seg = cv2.imread(seg_img_path, cv2.IMREAD_UNCHANGED)
-        if image_rgb is None or image_seg is None:
+        image_ins = cv2.imread(ins_img_path, cv2.IMREAD_UNCHANGED)
+        if image_rgb is None or image_seg is None or image_ins is None:
             return
         image_rgb = cv2.cvtColor(image_rgb, cv2.COLOR_RGBA2RGB)
         image_seg = cv2.cvtColor(image_seg, cv2.COLOR_BGRA2RGB)
+        image_ins = cv2.cvtColor(image_ins, cv2.COLOR_BGRA2RGB)
         img_name = os.path.basename(rgb_img_path)
         height, width, _ = image_rgb.shape
 
@@ -84,8 +90,8 @@ class YoloLabelTool:
                 x, y, w, h = cv2.boundingRect(cnt)
                 if w * h < YoloConfig.rectangle_pixels_min:
                     continue
-                # cv2.rectangle(self.preview_img, (x, y), (x + w, y + h), (0, 255, 0), 1)
-                # cv2.imshow("rect", self.preview_img)
+                # cv2.rectangle(preview_img, (x, y), (x + w, y + h), (0, 255, 0), 1)
+                # cv2.imshow("rect", preview_img)
                 # cv2.waitKey()
                 max_y, max_x, _ = image_rgb.shape
                 if y + h >= max_y or x + w >= max_x:
@@ -96,8 +102,8 @@ class YoloLabelTool:
 
                 # DEBUG START
                 # Draw label info to image
-                # cv2.putText(preview_img, COCO_NAMES[coco_id], (x, y - 10),
                 # cv2.putText(preview_img, TRACFFIC_LIGHTS[coco_id], (x, y - 10),
+                # cv2.putText(preview_img, COCO_NAMES[coco_id], (x, y - 10),
                 #             cv2.FONT_HERSHEY_SIMPLEX, 0.5, (36, 255, 12), 1)
                 # cv2.rectangle(image_rgb, (x, y), (x + w, y + h), (0, 255, 0), 1)
                 # DEBUG END
@@ -146,6 +152,11 @@ def main():
         default='image_2_semantic',
         help='Camera name. e.g. image_2_semantic'
     )
+    argparser.add_argument(
+        '--instance_camera', '-i',
+        default='image_2_instance',
+        help='Camera name. e.g. image_2_instance'
+    )
 
     args = argparser.parse_args()
 
@@ -161,7 +172,8 @@ def main():
         rawdata_df = gather_yolo_data(args.record,
                                       vehicle_name,
                                       args.rgb_camera,
-                                      args.semantic_camera)
+                                      args.semantic_camera,
+                                      args.instance_camera)
         print("Process {} - {}".format(record_name, vehicle_name))
         yolo_label_tool.process(rawdata_df)
 
