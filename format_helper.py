@@ -22,5 +22,6 @@ if __name__ == "__main__":
         if entry.is_dir() and entry.name.startswith("vehicle"):
             data.append(source+"/"+entry.name+"/image_2")
     for source_dir in data:
-        split_files(source_dir, 'dataset/test/images', 'dataset/test/labels')
+        split_files(source_dir, 'dataset/test/images', 'dataset/test/labels')    
+
     # print(data[0].split('/'))

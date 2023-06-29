@@ -28,8 +28,7 @@ class CameraBase(Sensor):
         if self.color_converter is not None:
             sensor_data.convert(self.color_converter)
         img = np.reshape(np.copy(sensor_data.raw_data), (sensor_data.height, sensor_data.width, 4))
-        with open("{}/{:0>10d}.txt".format(save_dir,
-                                                        sensor_data.frame),'a+') as f:
+        with open("{}/{:0>10d}.txt".format(save_dir, sensor_data.frame),'a+') as f:
             pass
         # Get the camera matrix 
         try:

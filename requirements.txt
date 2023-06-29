@@ -1,8 +1,12 @@
-opencv-python>4.0
-carla >= 0.9.12
-numpy>1.21.0
-transforms3d~=0.3.1
-open3d==0.13.0
-pandas
-shapely
-networkx
+carla==0.9.14
+matplotlib==3.1.2
+networkx==3.1
+numpy==1.23.5
+numpy==1.17.4
+open3d==0.17.0
+pandas==2.0.2
+PyYAML==6.0
+PyYAML==6.0
+sewar==0.4.5
+Shapely==2.0.1
+transforms3d==0.4.1
