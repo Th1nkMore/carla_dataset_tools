@@ -6,7 +6,7 @@ Data collection tools with active data acquisition strategy implemented for CARL
 
 ### Carla
 
-Download Carla version 0.9.14 [here]([GitHub - carla-simulator/carla: Open-source simulator for autonomous driving research.](https://github.com/carla-simulator/carla)).
+Download Carla version 0.9.14 [here](https://github.com/carla-simulator/carla).
 
 ### Environment
 
