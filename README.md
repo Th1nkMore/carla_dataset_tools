@@ -6,7 +6,6 @@ Data collection tools with active data acquisition strategy implemented for CARL
 
 Download Carla version 0.9.14 [here](https://github.com/carla-simulator/carla).
 
-
 ### Environment
 
 ```shell
@@ -23,22 +22,23 @@ export PYTHONPATH=$PYTHONPATH:$CARLA_ROOT/PythonAPI/carla/dist/[YOUR_CARLA_EGG_N
 
 Execute the command in the root directory:
 
-
 ```shell
 python3 data_recorder.py
 ```
 
 ### Dataset Preparing
 
-#### YOLO
+#### Image, lidar dataset
+
+We support image data as **YOLO** format, lidar data as **OpenPCDet** format.
 
 Execute the command in the root directory:
 
 ```shell
-python format_helper.py -s raw_data/record_2022_0119_1303
+python format_helper.py -s {raw_data/record...}
 ```
 
-#### KITTI
+#### Lidar Data Visualization
 
 Execute the command in the root directory to visualize lidar cloud point:
 
@@ -76,22 +76,20 @@ Thank you for your interest in contributing to this project! Contributions are h
 - [CARLA_INVS](https://github.com/zijianzhang/CARLA_INVS)
 
 ## Citation
+
 ```
 @article{Lai2023ActiveDA,
-  title={Active Data Acquisition in Autonomous Driving Simulation},
-  author={Jianyu Lai and Zexuan Jia and Boao Li},
-  journal={ArXiv},
-  year={2023},
-  volume={abs/2306.13923}
+ title={Active Data Acquisition in Autonomous Driving Simulation},
+ author={Jianyu Lai and Zexuan Jia and Boao Li},
+ journal={ArXiv},
+ year={2023},
+ volume={abs/2306.13923}
 }
 ```
+
 ## Future Work
 
 To validate the correctness of the strategy, we'd better try multiple algorithms:
 
 - [x] YOLO
-
-- [ ] VoxelNeXt
-=======
 - [ ] CenterPoint
-
