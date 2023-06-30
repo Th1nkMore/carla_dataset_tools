@@ -30,15 +30,17 @@ python3 data_recorder.py
 
 ### Dataset Preparing
 
-#### YOLO
+#### Image, lidar dataset
+
+We support image data as **YOLO** format, lidar data as **OpenPCDet** format.
 
 Execute the command in the root directory:
 
 ```shell
-python format_helper.py -s raw_data/record_2022_0119_1303
+python format_helper.py -s {raw_data/record...}
 ```
 
-#### KITTI
+#### Lidar Data Visualization
 
 Execute the command in the root directory to visualize lidar cloud point:
 
