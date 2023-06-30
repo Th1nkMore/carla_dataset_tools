@@ -92,8 +92,4 @@ Thank you for your interest in contributing to this project! Contributions are h
 To validate the correctness of the strategy, we'd better try multiple algorithms:
 
 - [x] YOLO
-
-- [ ] VoxelNeXt
-  =======
-
 - [ ] CenterPoint
