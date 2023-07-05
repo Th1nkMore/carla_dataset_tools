@@ -23,28 +23,8 @@ def custom_draw_geometry(pcd,box_set):
     vis.run()
     vis.destroy_window()
 
-def get_object_corner(semantic_point):
-    """
-    #Values    Name      Description
-    ----------------------------------------------------------------------------
-    1    type         Describes the type of object: 'Car', 'Pedestrian', 'Vehicles'
-                        'Vegetation', 'TrafficSigns', etc.
-    1    truncated    Float from 0 (non-truncated) to 1 (truncated), where
-                        truncated refers to the object leaving image boundaries
-    1    occluded     Integer (0,1,2,3) indicating occlusion state:
-                        0 = fully visible, 1 = partly occluded
-                        2 = largely occluded, 3 = unknown
-    1    alpha        Observation angle of object, ranging [-pi..pi]
-    4    bbox         2D bounding box of object in the image (0-based index):
-                        contains left, top, right, bottom pixel coordinates
-    3    dimensions   3D object dimensions: height, width, length (in meters)
-    3    location     3D object location x,y,z in camera coordinates (in meters)
-    1    rotation_y   Rotation ry around Y-axis in camera coordinates [-pi..pi]
-    1    score        Only for results: Float, indicating confidence in
-                        detection, needed for p/r curves, higher is better.
-                               
-    0    Corner Point Format
-                                
+def get_object_corner(semantic_point,last_dis):
+    """                               
            7 ------- 5          
          / |       / |          
        1 ------- 3   |                  
@@ -74,6 +54,8 @@ def get_object_corner(semantic_point):
             
     save_info = []
     corner_set={}
+    total_score = []
+    now_dis = {}
     for label, points in labels.items():
         for oid, object in points.items():
             z = []
@@ -94,11 +76,13 @@ def get_object_corner(semantic_point):
                               [corner_point[2][0], corner_point[2][1], max_z],
                               [corner_point[3][0], corner_point[3][1], min_z],
                               [corner_point[3][0], corner_point[3][1], max_z]])
-            # kitti format
-            # label_str = "{} {} {} {} {} {} {} {} {} {} {} {} {} {} {}" .format(label_dict[label], 0, 0, 0, 0, 0, 0,
-            #                                                                 (max_z - min_z), rotRect[1][0], rotRect[1][1],
-            #                                                                 rotRect[0][0], rotRect[0][1], (max_z + min_z) / 2,
-            #                                                                 rotRect[2], '')
+            if not str(label)+' '+(str(oid)) in last_dis:
+                dis = 0
+            else: dis = last_dis[str(label)+str(oid)]
+
+            score, dis_k = active_lidar(p_2d,max_z,min_z,dis,label)
+            total_score.append(score)
+            now_dis[str(label)+str(oid)] = dis_k
             
             # openpcdet format
             label_str = "{} {} {} {} {} {} {} {}" .format(
@@ -112,27 +96,19 @@ def get_object_corner(semantic_point):
                 corner_set[label] = {}
             corner_set[label][oid] = corners
 
-    return save_info, corner_set
+    # print(sum(total_score) / len(total_score))
+    return save_info, corner_set, now_dis, sum(total_score) / len(total_score)
 
-def check():
-    
-    return
-
-def label():
+def main():
     args = parse_config()
     semantic_point = np.array([list(elem) for elem in np.load(args.data)])
 
     point_cloud = o3d.geometry.PointCloud()
     point_cloud.points = o3d.utility.Vector3dVector(semantic_point[:,:3])
 
-    _, corner_set = get_object_corner(semantic_point)
+    _, corner_set, _, _ = get_object_corner(semantic_point,{})
 
-    # for old version
-    # lines_box = np.array([[0,1],[1,3],[3,2],[2,0],[5,7],[7,6],[6,4],[5,4],[1,5],[3,7],[0,4],[2,6]])
-
-    # for new version
     lines_box = np.array([[0,1],[2,3],[4,5],[6,7],[0,2],[6,4],[1,3],[7,5],[0,6],[2,4],[1,7],[3,5]])
-    
     
     colors = np.array([[0, 1, 0] for j in range(len(lines_box))])
     box_set = []
@@ -147,11 +123,44 @@ def label():
 
     custom_draw_geometry(point_cloud, box_set)
 
-def save_label(lidar_data):
+def save_label(lidar_data, last_score):
     semantic_point = np.array([list(elem) for elem in lidar_data])
 
-    label_set, _ = get_object_corner(semantic_point)
-    return label_set
+    label_set, _, now_dis, score = get_object_corner(semantic_point,last_score)
+    return label_set, now_dis, score
+
+def active_lidar(p_2d,max_z,min_z,dis, type):
+    # TODO: fix active frequency
+    rotRect = cv2.minAreaRect(np.array(p_2d,dtype=np.float32))
+    dis_k = math.sqrt(math.pow(rotRect[0][0], 2) + math.pow(rotRect[0][1], 2)+math.pow((max_z + min_z) / 2 , 2))
+    
+    s_dis = score_dis(dis_k)
+    s_rho = score_rho(rotRect,len(p_2d),max_z,min_z)
+    if type in {14.,15.,16.,19.} and dis != 0:
+        s_tau = score_tau(dis_k - dis)
+    else: s_tau = 0
+
+    score = score_total(s_dis, s_rho, s_tau)
+    return score,dis_k
+
+def score_dis(x):
+    s = 1 / 90 * max(0, 0.0001 * math.pow(x,3) - 0.0578 * math.pow(x, 2) + 4.8141 * x - 19.495)
+    return s
+
+def score_rho(infos,count,max_z,min_z):
+    div = infos[1][0] * infos[1][1] * (max_z - min_z)
+    if div == 0: return 0
+    s = count /div
+    if s < 35 and s > 20: return 1
+    return 0.65 
+
+def score_tau(x):
+    # sigmonid function
+    return 1 / (1 + math.pow(math.e, -x))
+
+def score_total(s_dis, s_rho, s_tau):
+    return 0.8 * s_dis + 0.8 * s_rho + 1.4 * s_tau
 
 if __name__ == '__main__':
-    label()
+    # use -d to input .npy velodyne data path
+    main()
