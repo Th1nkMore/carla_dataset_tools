@@ -18,13 +18,16 @@ def split_lidar(source_dir, set_dir ,pyn_dir, txt_dir):
     pyn_listdir = source_dir + '/velodyne'
     txt_listdir = source_dir + '/velodyne_semantic'
     file_cnt = 0
-    for filename in os.listdir(pyn_listdir):
-        if filename.endswith('.npy'):
-            file_cnt += 1
-            shutil.copy(os.path.join(pyn_listdir,filename), os.path.join(pyn_dir, pyn_listdir.split('/')[2]+"_"+filename))
+    # for filename in os.listdir(pyn_listdir):
+    #     if filename.endswith('.npy'):
+    #         file_cnt += 1
+    #         shutil.copy(os.path.join(pyn_listdir,filename), os.path.join(pyn_dir, pyn_listdir.split('/')[2]+"_"+filename))
     for filename in os.listdir(txt_listdir):
         if filename.endswith('.txt'):
+            file_cnt += 1
             shutil.copy(os.path.join(txt_listdir,filename), os.path.join(txt_dir, txt_listdir.split('/')[2]+"_"+filename))
+            shutil.copy(os.path.join(pyn_listdir,filename.replace('.txt','.npy')), os.path.join(pyn_dir, pyn_listdir.split('/')[2]+"_"+filename.replace('.txt','.npy')))
+            
     
     return file_cnt
 
@@ -43,13 +46,15 @@ if __name__ == "__main__":
     lidar_file_num = 0
     for source_dir in data:
         split_files(source_dir+"/image_2", 'dataset/test/images', 'dataset/test/labels')
-        lidar_file_num += split_lidar(source_dir,'dataset/lidar/ImageSets' ,'dataset/lidar/points', 'dataset/lidar/label')
+        lidar_file_num += split_lidar(source_dir,'dataset/lidar/ImageSets' ,'dataset/lidar/points', 'dataset/lidar/labels')
     
     file_train = open('dataset/lidar/ImageSets/train.txt','w')
     file_val = open('dataset/lidar/ImageSets/val.txt','w')
     idx = 0
-    while idx < lidar_file_num:
+
+    file_list = os.listdir('dataset/lidar/labels')
+    for points in file_list:
         if idx % 12 == 0:
-            print(idx, file=file_val)
-        else: print(idx, file=file_train)
+            print(points.replace('.txt',''), file=file_val)
+        else: print(points.replace('.txt',''), file=file_train)
         idx += 1
