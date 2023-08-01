@@ -16,21 +16,6 @@
             "fov": 90.0
         },
         {
-            "type": "sensor.camera.semantic_segmentation",
-            "name": "image_2_semantic",
-            "spawn_point": {
-                "x": 2.0,
-                "y": 0.0,
-                "z": 2.0,
-                "roll": 0.0,
-                "pitch": 0.0,
-                "yaw": 0.0
-            },
-            "image_size_x": 1382,
-            "image_size_y": 512,
-            "fov": 90.0
-        },
-        {
             "type": "sensor.lidar.ray_cast",
             "name": "velodyne",
             "spawn_point": {
@@ -81,22 +66,6 @@
             "image_size_x": 1382,
             "image_size_y": 512,
             "fov": 90.0
-        },
-        {
-            "type": "sensor.other.radar",
-            "name": "radar_front",
-            "spawn_point": {
-                "x": 2.0,
-                "y": 0.0,
-                "z": 2.0,
-                "roll": 0.0,
-                "pitch": 0.0,
-                "yaw": 0.0
-            },
-            "horizontal_fov": 30.0,
-            "vertical_fov": 10.0,
-            "points_per_second": 1500,
-            "range": 100.0
         }
     ]
 }

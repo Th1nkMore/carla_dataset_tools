@@ -85,6 +85,8 @@ class DataRecorder:
                                                               actor_config_file),
                                         self.base_save_dir)
             self.actor_tree.init()
+            self.actor_tree.print_tree()
+
 
     def start_record(self):
         self.setting_world_and_actors(self.world_config_file)

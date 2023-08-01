@@ -14,7 +14,7 @@
             "name": "lidar",
             "spawn_point": {"x": 0.0, "y": 0.0, "z": 2.4, "roll": 0.0, "pitch": 0.0, "yaw": 0.0},
             "range": 50,
-            "channels": 80,
+            "channels": 64,
             "points_per_second": 2300000,
             "upper_fov": 15,
             "lower_fov": -25,

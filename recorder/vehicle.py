@@ -23,6 +23,7 @@ class OtherVehicle(Actor):
         # For vehicle control
         self.auto_pilot = True
         self.vehicle_agent = None
+        self.carla_actor = carla_actor
 
     def get_type_id(self):
         return 'others.other_vehicle'
@@ -33,6 +34,14 @@ class OtherVehicle(Actor):
 
     def get_save_dir(self):
         return self.save_dir
+    
+
+    def get_carla_bbox(self):
+        return self.carla_actor.bounding_box
+
+    def get_carla_transform(self):
+        return self.carla_actor.get_transform()
+
 
     def control_step(self):
         # TODO: Migration with agents.behavior_agent
@@ -42,6 +51,9 @@ class OtherVehicle(Actor):
         #     self.auto_pilot = True
         # else:
         #     return
+
+    def get_carla_actor(self):
+        return self.carla_actor
 
 
 class Vehicle(Actor):
@@ -60,6 +72,7 @@ class Vehicle(Actor):
         self.use_auto_pilot = True
         # self.vehicle_agent = BasicAgent(self.carla_actor)
         # self.vehicle_agent = BehaviorAgent(self.carla_actor)
+        self.carla_actor= carla_actor
 
     def get_save_dir(self):
         return self.save_dir
@@ -76,6 +89,9 @@ class Vehicle(Actor):
         :return: vehicle control command.
         """
         return self.carla_actor.get_control()
+    
+    def get_carla_actor(self):
+        return self.carla_actor
 
     @staticmethod
     def vehicle_control_to_dict(vehicle_control: carla.VehicleControl) -> dict:

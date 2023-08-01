@@ -101,6 +101,8 @@ class ActorFactory(object):
         self.base_save_dir = base_save_dir
         self.v2x_layer_name_set = set()
         self.sensor_layer_name_set = set()
+        self.recorde_cars = []
+        self.other_cars = []
 
     def create_actor_tree(self, actor_config_file):
         assert (self.base_save_dir is not None)
@@ -119,6 +121,7 @@ class ActorFactory(object):
             if actor_type.startswith("vehicle"):
                 node = self.create_vehicle_node(actor_info)
                 root.add_child(node)
+                self.recorde_cars.append(node.get_actor())
             elif actor_type.startswith("infrastructure"):
                 node = self.create_infrastructure_node(actor_info)
                 root.add_child(node)
@@ -130,14 +133,24 @@ class ActorFactory(object):
                         sensors_setting = json.loads(sensor_handle.read())
                         sensor_name_set = set()
                         for sensor_info in sensors_setting["sensors"]:
-                            sensor_node = self.create_sensor_node(sensor_info, node.get_actor(), sensor_name_set)
+                            sensor_node, sensor_type = self.create_sensor_node(sensor_info, node.get_actor(), sensor_name_set)
                             node.add_child(sensor_node)
+                            if sensor_type == 'sensor.lidar.ray_cast_semantic':
+                                lidar_sensor = sensor_node
 
         other_vehicle_info = json_actors["other_vehicles"]
         ov_nodes = self.create_other_vehicles(other_vehicle_info)
+        for other_vehicle in ov_nodes:
+            self.other_cars.append(other_vehicle.get_actor())
         root.get_children().extend(ov_nodes)
 
+        lidar_sensor.get_actor().set_car_list(self.recorde_cars, self.other_cars);
+
         return root
+    
+    def get_car_list(self):
+
+        return self.recorde_cars, self.other_cars
 
     def create_world_node(self):
         world_actor = WorldActor(uid=self.generate_uid(),
@@ -162,7 +175,7 @@ class ActorFactory(object):
                 spawn_point.pop("yaw", 0.0))
         blueprint = self.blueprint_lib.find(vehicle_type)
         carla_actor = self.world.spawn_actor(blueprint, transform)
-        print(vehicle_name)
+        # print(vehicle_name)
         vehicle_object = Vehicle(uid=self.generate_uid(),
                                  name=vehicle_name,
                                  base_save_dir=self.base_save_dir,
@@ -303,7 +316,7 @@ class ActorFactory(object):
             print("Unsupported sensor type: {}".format(sensor_type))
             raise AttributeError
         sensor_node = Node(sensor_actor, NodeType.SENSOR)
-        return sensor_node
+        return sensor_node, sensor_type
 
     def create_weather_node(self):
         weather_actor = WeatherActor(uid=self.generate_uid(),
